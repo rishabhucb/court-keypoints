@@ -39,8 +39,24 @@ to map player and ball positions onto a top-down court.
   - Images are elevated high-school gym views, closer to a tripod setup than NBA broadcast.
   - `flip_idx` in data.yaml is incorrect; correct version is `[1, 0, 12, 4, 3, 6, 5, 11, 10, 9, 8, 7, 2]`. To fix before training.
   - Many images are frames from the same game videos; checking for train/test overlap.
+-  **Day 3:** Data cleanup and baseline training (YOLO11n-pose).
+  - Original Roboflow split leaked near-duplicate video frames: 86% of validation images had a near-twin in train.
+  - Grouped near-duplicates with perceptual hashing: the dataset is effectively 2 camera views (two ends of a court) plus ~20 extra images.
+  - Re-split so validation/test come from the view not used for training (`court_resplit`).
+  - Fixed labels: off-screen keypoints had negative coordinates, causing YOLO to skip 23 of 27 test images. Marked them as not visible.
+  - Fixed `flip_idx` in data.yaml.
+
+  | Run | What changed | Test pose mAP50 | Lesson |
+  |---|---|---|---|
+  | v1 | 100 epochs, early stopping | 0 | Stopped before keypoints were learned |
+  | v2 | 300 epochs | 0 (4 images) | Learned training view (train mAP 0.96); most test images skipped |
+  | v3 | Fixed off-screen labels | 0 (27 images) | Does not transfer to an unseen camera view |
+  | v4 | Both court ends in training | 0.995 (mAP50-95 0.63) | Works once the view is in training |
+
+  **Takeaway:** the model works, but only on camera views it has seen. We need our own footage from more courts and angles. (v4 test is easy: same view, later frames, 11 images.)
 
 ## Open questions
 - Target court standard: NBA or high school?
 - Half court only?
 - Fixed tripod/phone camera?
+- Is there a larger or more varied court keypoint dataset we can use?
