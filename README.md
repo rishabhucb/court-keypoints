@@ -69,6 +69,9 @@ to map player and ball positions onto a top-down court.
   - Caveat: test frames come from camera views seen in training (v4), and are similar moments of one game.
   - Figures saved in Google Drive: `court_keypoints/figures/`.
 
+  - **3-point line + 2PT/3PT:** fitted the 3-point arc through the 5 labeled 3-point keypoints (IDs 7–11), drew it on the camera image, and classified each player's court position as 2PT, 3PT, or "too close to call" (within 1.5 ft of the line, our mapping error).
+  - First version used the official high-school rule (19'9" arc) and drifted at the ends; fitting the arc to the dataset's own keypoints fixed it.
+  - Limit: this classifies positions, not shots. Scoring a real shot needs ball/hoop detection and player tracking (other teams).
 
 
 ## Open questions
