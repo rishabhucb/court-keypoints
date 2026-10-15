@@ -55,8 +55,25 @@ to map player and ball positions onto a top-down court.
 
   **Takeaway:** the model works, but only on camera views it has seen. We need our own footage from more courts and angles. (v4 test is easy: same view, later frames, 11 images.)
 
+- **Day 4:** Homography demo: court keypoints → top-down court → players on a 2D map.
+  - Pipeline: YOLO pose model (v4) finds court keypoints → `cv2.findHomography` maps image pixels to court coordinates in feet → standard YOLO person detector finds players → each player's feet are projected onto a 2D court diagram.
+  - Measured the dataset's real court geometry from the labels (using the 4 paint corners as reference) instead of assuming it. Confirmed a high-school court (3-point arc ~19'9" from the hoop).
+  - Found that the corner and half-court sideline points (IDs 0, 1, 2, 12) are unreliable: they are often off screen and labeled at the image edge (spread up to 10.8 ft). Excluded them.
+
+  | Step | Mean court-mapping error |
+  |---|---|
+  | All 13 points, assumed positions | 24.4 ft |
+  | Reliable points only (IDs 3–11), measured positions | **1.6 ft** |
+
+  - OpenCV comparison: white-line mask + Hough transform found 104 lines, mostly on the scoreboard, stands and reflections, not on the court. Court lines in these gyms are dark or cream, not bright white. This shows why learned keypoints work better than classical line detection.
+  - Caveat: test frames come from camera views seen in training (v4), and are similar moments of one game.
+  - Figures saved in Google Drive: `court_keypoints/figures/`.
+
+
+
 ## Open questions
 - Target court standard: NBA or high school?
 - Half court only?
 - Fixed tripod/phone camera?
 - Is there a larger or more varied court keypoint dataset we can use?
+- - Can we record our own footage at local courts to test on new gyms and camera angles?
