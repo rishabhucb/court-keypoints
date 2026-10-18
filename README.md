@@ -55,7 +55,7 @@ to map player and ball positions onto a top-down court.
 
   **Takeaway:** the model works, but only on camera views it has seen. We need our own footage from more courts and angles. (v4 test is easy: same view, later frames, 11 images.)
 
-- **Day 4:** Homography demo: court keypoints → top-down court → players on a 2D map.
+**Day 4:** Homography demo: court keypoints → top-down court → players on a 2D map.
   - Pipeline: YOLO pose model (v4) finds court keypoints → `cv2.findHomography` maps image pixels to court coordinates in feet → standard YOLO person detector finds players → each player's feet are projected onto a 2D court diagram.
   - Measured the dataset's real court geometry from the labels (using the 4 paint corners as reference) instead of assuming it. Confirmed a high-school court (3-point arc ~19'9" from the hoop).
   - Found that the corner and half-court sideline points (IDs 0, 1, 2, 12) are unreliable: they are often off screen and labeled at the image edge (spread up to 10.8 ft). Excluded them.
@@ -73,6 +73,15 @@ to map player and ball positions onto a top-down court.
   - First version used the official high-school rule (19'9" arc) and drifted at the ends; fitting the arc to the dataset's own keypoints fixed it.
   - Limit: this classifies positions, not shots. Scoring a real shot needs ball/hoop detection and player tracking (other teams).
 
+    
+ **Day 5:** Second dataset and model.
+  - Forked "HS Basketball - Court Keypoints" from Roboflow Universe (Ethan Liu, CC BY 4.0): 861 images, several high-school gyms, full-court side view, 18 keypoints (baselines, paint corners, free-throw line ends, corner-3 points, half-court points). No 3-point arc points.
+  - Mapped all 18 keypoint IDs by visual inspection. Fixed the dataset's `flip_idx` (mirroring swaps the two baskets).
+  - Old model (v4) on these new gyms: failed (no detection or scattered points).
+  - Cleaned the data: grouped near-duplicate frames (280 groups), split by group into 646 train / 129 valid / 86 test, hid off-screen keypoints.
+  - Trained YOLO11n-pose (`hs_v1.pt`, 150 epochs): **test pose mAP50 0.995, mAP50-95 0.98**.
+  - Caveat: test images are new moments from probably the same gyms. On the old dataset's camera angle (half court from behind a corner), hs_v1 also fails.
+  - **Takeaway:** both models work on camera angles they have seen and fail on new ones. Camera-angle variety in training data matters most.
 
 ## Open questions
 - Target court standard: NBA or high school?
